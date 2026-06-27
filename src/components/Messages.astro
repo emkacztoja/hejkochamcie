@@ -175,14 +175,25 @@ const wiadomosci =
 
 <script>
   const chatMessages = document.querySelector('.chat-messages');
-  if (chatMessages) {
-    const preventBubbling = (e: Event) => {
-      e.stopPropagation();
+  const slidesContainer = document.querySelector('.slides') as HTMLElement;
+  
+  if (chatMessages && slidesContainer) {
+    const disableSnap = () => {
+      slidesContainer.style.setProperty('scroll-snap-type', 'none');
     };
-
-    chatMessages.addEventListener('touchstart', preventBubbling, { passive: true });
-    chatMessages.addEventListener('touchmove', preventBubbling, { passive: true });
-    chatMessages.addEventListener('touchend', preventBubbling, { passive: true });
-    chatMessages.addEventListener('wheel', preventBubbling, { passive: true });
+    
+    const enableSnap = () => {
+      slidesContainer.style.setProperty('scroll-snap-type', 'y mandatory');
+    };
+    
+    // Disable scroll snap when user touches/interacts with chat, and restore on end
+    chatMessages.addEventListener('touchstart', disableSnap, { passive: true });
+    chatMessages.addEventListener('touchmove', (e) => e.stopPropagation(), { passive: true });
+    chatMessages.addEventListener('touchend', enableSnap, { passive: true });
+    chatMessages.addEventListener('touchcancel', enableSnap, { passive: true });
+    
+    // For desktop mouse wheel interactions
+    chatMessages.addEventListener('mouseenter', disableSnap);
+    chatMessages.addEventListener('mouseleave', enableSnap);
   }
 </script>
