@@ -1,0 +1,31 @@
+---
+import Base from '../layouts/Base.astro';
+import PreIntro from '../components/PreIntro.astro';
+import Intro from '../components/Intro.astro';
+import HowItStarted from '../components/HowItStarted.astro';
+import Stats from '../components/Stats.astro';
+import Soundtrack from '../components/Soundtrack.astro';
+import Messages from '../components/Messages.astro';
+import Gallery from '../components/Gallery.astro';
+import Coupons from '../components/Coupons.astro';
+import WhyILoveHer from '../components/WhyILoveHer.astro';
+import Finale from '../components/Finale.astro';
+import SlideNav from '../components/SlideNav.astro';
+import { siteConfig } from '../data/config';
+---
+
+<Base title={siteConfig.tytul} description={`Pierwszy wspólny miesiąc w liczbach, dźwiękach i wspomnieniach. Dla Ciebie, ${siteConfig.jejImie} 💗`}>
+  <main class="slides">
+    <PreIntro />
+    <Intro />
+    <HowItStarted />
+    <Stats />
+    <Soundtrack />
+    <Messages />
+    <Gallery />
+    <Coupons />
+    <WhyILoveHer />
+    <Finale />
+  </main>
+  <SlideNav total={10} />
+</Base>

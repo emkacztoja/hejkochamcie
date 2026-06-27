@@ -1,0 +1,210 @@
+---
+import { siteConfig } from '../data/config';
+import SlideShell from './SlideShell.astro';
+---
+
+<SlideShell id="slide-3" bg="purple" showScrollHint={true}>
+  <p class="slide-eyebrow">Slajd 3 z 9</p>
+  <h2 class="slide-title">
+    Miesiąc w <span class="gradient">liczbach</span> 📊
+  </h2>
+  <p class="slide-subtitle">{siteConfig.statystykiPodtytul}</p>
+
+  <div class="stats-grid">
+    {siteConfig.statystyki.map((s, i) => (
+      <div class="stat-card" data-stat={s.typ === 'statyczny'} data-target={s.wartosc}>
+        <span class="stat-icon" aria-hidden="true">{s.ikona}</span>
+        
+        {s.typ === 'dynamiczny' ? (
+          <div class="stat-number-dynamic" id="stats-live-counter" data-start={siteConfig.dataRazem}>
+            <span class="days-val">0</span> <span class="days-label">dni</span>
+            <div class="time-val">00:00:00</div>
+          </div>
+        ) : s.typ === 'nieskonczonosc' ? (
+          <div class="stat-number-infinity">
+            ∞
+          </div>
+        ) : s.typ === 'staly' ? (
+          <div class="stat-number">
+            {s.wartosc}{s.przyrostek}
+          </div>
+        ) : (
+          <div class="stat-number">
+            <span data-stat-value>0</span>{s.przyrostek}
+          </div>
+        )}
+        
+        <div class="stat-label">{s.etykieta}</div>
+      </div>
+    ))}
+  </div>
+</SlideShell>
+
+<style>
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 24px;
+    margin-top: 48px;
+  }
+
+  .stat-card {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(14px);
+    border-radius: var(--radius-lg);
+    padding: 32px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-card);
+    transition: all 0.3s ease;
+  }
+
+  .stat-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 77, 141, 0.4);
+    transform: translateY(-4px);
+  }
+
+  .stat-icon {
+    font-size: 2.4rem;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .stat-number,
+  .stat-number-infinity {
+    font-size: clamp(2.6rem, 5vw, 4rem);
+    font-weight: 800;
+    line-height: 1;
+    margin: 0 0 12px;
+    background: var(--gradient-warm);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .stat-number-dynamic {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 0 12px;
+    line-height: 1.1;
+  }
+
+  .stat-number-dynamic .days-val {
+    font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+    font-weight: 800;
+    background: var(--gradient-warm);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .stat-number-dynamic .days-label {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent-pink);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: -2px;
+    margin-bottom: 6px;
+  }
+
+  .stat-number-dynamic .time-val {
+    font-size: clamp(1.1rem, 2vw, 1.35rem);
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.05em;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 4px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .stat-label {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+</style>
+
+<script>
+  function animateCounter(el: HTMLElement) {
+    const target = Number(el.getAttribute('data-target') ?? '0');
+    const valueEl = el.querySelector('[data-stat-value]') as HTMLElement | null;
+    if (!valueEl) return;
+
+    const duration = 1600;
+    const start = performance.now();
+
+    function tick(now: number) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease-out-cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.floor(eased * target);
+      valueEl!.textContent = current.toLocaleString('pl-PL');
+      if (progress < 1) requestAnimationFrame(tick);
+      else valueEl!.textContent = target.toLocaleString('pl-PL');
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // Uruchomienie liczników statycznych po przeskoczeniu na slajd
+  const stats = document.querySelectorAll('[data-stat="true"]');
+  let started = false;
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && !started) {
+          started = true;
+          stats.forEach((s, i) => {
+            setTimeout(() => animateCounter(s as HTMLElement), i * 120);
+          });
+          observer.disconnect();
+        }
+      });
+    },
+    { threshold: 0.4 }
+  );
+  stats.forEach((s) => observer.observe(s));
+
+  // Licznik na żywo dla czasu razem
+  const liveEl = document.getElementById('stats-live-counter');
+  if (liveEl) {
+    const startDateStr = liveEl.getAttribute('data-start') ?? '';
+    const startDate = new Date(startDateStr).getTime();
+    
+    const daysVal = liveEl.querySelector('.days-val') as HTMLElement;
+    const timeVal = liveEl.querySelector('.time-val') as HTMLElement;
+    
+    function updateLiveStats() {
+      const now = new Date().getTime();
+      const diff = now - startDate;
+      
+      if (diff <= 0) {
+        if (daysVal) daysVal.textContent = '0';
+        if (timeVal) timeVal.textContent = '00:00:00';
+        return;
+      }
+      
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      const pad = (num: number) => num.toString().padStart(2, '0');
+      
+      if (daysVal) daysVal.textContent = days.toLocaleString('pl-PL');
+      if (timeVal) timeVal.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    }
+    
+    updateLiveStats();
+    setInterval(updateLiveStats, 1000);
+  }
+</script>

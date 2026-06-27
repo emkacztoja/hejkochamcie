@@ -1,0 +1,225 @@
+---
+import { siteConfig } from '../data/config';
+import SlideShell from './SlideShell.astro';
+
+const kupony = siteConfig.kupony;
+---
+
+<SlideShell id="slide-7" bg="cool" showScrollHint={true}>
+  <p class="slide-eyebrow">Slajd 7 z 9</p>
+  <h2 class="slide-title">
+    Kupony do <span class="gradient">zrealizowania</span> 🎟️
+  </h2>
+  <p class="slide-subtitle">Każdy kupon jest ważny przez 100 lat. Bezterminowo.</p>
+  
+  <div class="coupons-grid">
+    {kupony.map((kupon, i) => (
+      <div class="coupon-card" data-coupon data-index={i}>
+        <div class="coupon-front">
+          <span class="coupon-icon">{kupon.ikona}</span>
+          <h3 class="coupon-title">{kupon.tresc}</h3>
+          <p class="coupon-desc">{kupon.opis}</p>
+          <span class="coupon-rip">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+          </span>
+          <span class="coupon-number">#{String(i + 1).padStart(3, '0')}</span>
+        </div>
+        <div class="coupon-back">
+          <span class="coupon-used">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+            </svg>
+          </span>
+          <p>Zrealizowano!</p>
+        </div>
+      </div>
+    ))}
+  </div>
+</SlideShell>
+
+<style>
+  .coupons-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 20px;
+    margin-top: 40px;
+  }
+  
+  .coupon-card {
+    perspective: 1000px;
+    cursor: pointer;
+    height: 200px;
+  }
+  
+  .coupon-front,
+  .coupon-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .coupon-front {
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+  }
+  
+  .coupon-card:hover .coupon-front {
+    transform: rotateY(180deg);
+  }
+  
+  .coupon-card.redeemed .coupon-front {
+    transform: rotateY(180deg);
+  }
+  
+  .coupon-back {
+    background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+    transform: rotateY(180deg);
+  }
+  
+  .coupon-card.redeemed:hover .coupon-front {
+    transform: rotateY(0deg);
+  }
+  
+  .coupon-card.redeemed .coupon-back {
+    transform: rotateY(0deg);
+  }
+  
+  .coupon-icon {
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+  }
+  
+  .coupon-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 8px;
+    color: white;
+  }
+  
+  .coupon-desc {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+  }
+  
+  .coupon-rip {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    color: var(--accent-pink);
+    opacity: 0.4;
+  }
+  
+  .coupon-number {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.1em;
+  }
+  
+  .coupon-used {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+  
+  .coupon-back p {
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+  }
+  
+  .coupon-card {
+    position: relative;
+  }
+</style>
+
+<script>
+  const coupons = document.querySelectorAll('[data-coupon]');
+  const webhookUrl = "https://discord.com/api/webhooks/1520221501180215386/NzrVVrHXx4PqxK3ih4oMgDcAhbPdyn3tbDKZAseOR-rZC5DKQ9-RJTS4UKk8o6UbJMx7";
+  
+  // Load saved state from localStorage
+  const savedCoupons = JSON.parse(localStorage.getItem('redeemedCoupons') || '{}');
+  
+  coupons.forEach((coupon) => {
+    const index = coupon.getAttribute('data-index');
+    
+    // Restore saved state
+    if (savedCoupons[index]) {
+      coupon.classList.add('redeemed');
+    }
+    
+    coupon.addEventListener('click', () => {
+      const isRedeemed = coupon.classList.contains('redeemed');
+      
+      if (!isRedeemed) {
+        coupon.classList.add('redeemed');
+        savedCoupons[index] = true;
+        localStorage.setItem('redeemedCoupons', JSON.stringify(savedCoupons));
+        
+        // Pobierz dane kuponu do powiadomienia
+        const couponTitle = coupon.querySelector('.coupon-title')?.textContent || '';
+        const couponDesc = coupon.querySelector('.coupon-desc')?.textContent || '';
+        const couponIcon = coupon.querySelector('.coupon-icon')?.textContent || '🎟️';
+        
+        // Wyślij powiadomienie na Discord Webhook
+        fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            embeds: [{
+              title: `${couponIcon} Kupon Zrealizowany!`,
+              description: `**Lenka** właśnie zaoferowała realizację kuponu:\n\n**${couponTitle}**\n*${couponDesc}*`,
+              color: 16731533, // Różowy kolor #ff4d8d w formacie dziesiętnym
+              timestamp: new Date().toISOString(),
+              footer: {
+                text: "Kupony Miłości 💕"
+              }
+            }]
+          })
+        }).catch(err => console.error('Błąd wysyłania webhooka na Discorda:', err));
+        
+        // Confetti burst
+        import('canvas-confetti').then(({ default: confetti }) => {
+          const rect = coupon.getBoundingClientRect();
+          confetti({
+            particleCount: 50,
+            spread: 60,
+            origin: {
+              x: (rect.left + rect.width / 2) / window.innerWidth,
+              y: (rect.top + rect.height / 2) / window.innerHeight,
+            },
+            colors: ['#ff4d8d', '#d946ef', '#ffd166'],
+          });
+        });
+      } else {
+        coupon.classList.remove('redeemed');
+        delete savedCoupons[index];
+        localStorage.setItem('redeemedCoupons', JSON.stringify(savedCoupons));
+      }
+    });
+  });
+</script>

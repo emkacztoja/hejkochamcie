@@ -1,0 +1,112 @@
+---
+import { siteConfig } from '../data/config';
+import SlideShell from './SlideShell.astro';
+---
+
+<SlideShell id="slide-2" bg="purple" showScrollHint={true}>
+  <p class="slide-eyebrow">Slajd 2 z 9</p>
+  <h2 class="slide-title">
+    A wszystko zaczęło się od <span class="gradient">relacji na Instagramie</span> 💬
+  </h2>
+  
+  <div class="story-card">
+    <div class="story-screenshot">
+      {siteConfig.screenshotIG ? (
+        <img src={siteConfig.screenshotIG} alt="Nasza pierwsza relacja na Instagramie" />
+      ) : (
+        <div class="story-placeholder">
+          <span class="story-placeholder-icon">📱</span>
+          <p>Wrzuć screenshot z IG story tutaj</p>
+          <code>screenshotIG</code>
+        </div>
+      )}
+    </div>
+    
+    <div class="story-text">
+      <p class="story-date">{siteConfig.dataRelacji}</p>
+      <p class="story-description">{siteConfig.historiaPoznania}</p>
+    </div>
+  </div>
+</SlideShell>
+
+<style>
+  .story-card {
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: center;
+  }
+  
+  .story-screenshot {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    background: var(--bg-elevated);
+    aspect-ratio: 9/16;
+    max-height: 400px;
+  }
+  
+  .story-screenshot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .story-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 32px;
+    text-align: center;
+    border: 2px dashed rgba(255, 77, 141, 0.3);
+    border-radius: var(--radius-lg);
+    color: var(--text-muted);
+  }
+  
+  .story-placeholder-icon {
+    font-size: 3rem;
+  }
+  
+  .story-placeholder code {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: var(--accent-pink);
+  }
+  
+  .story-text {
+    padding: 24px;
+  }
+  
+  .story-date {
+    font-size: 0.9rem;
+    color: var(--accent-pink);
+    font-weight: 600;
+    margin: 0 0 16px;
+    letter-spacing: 0.05em;
+  }
+  
+  .story-description {
+    font-family: var(--font-hand);
+    font-size: clamp(1.4rem, 3vw, 1.8rem);
+    line-height: 1.5;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+  
+  @media (max-width: 768px) {
+    .story-card {
+      grid-template-columns: 1fr;
+    }
+    
+    .story-screenshot {
+      max-height: 300px;
+    }
+  }
+</style>

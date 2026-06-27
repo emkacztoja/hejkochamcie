@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff4d8d;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#grad)" rx="20"/>
+  <circle cx="200" cy="160" r="80" fill="rgba(255,255,255,0.2)"/>
+  <path d="M175 140 L240 175 L175 210 Z" fill="white" opacity="0.9"/>
+  <text x="200" y="300" text-anchor="middle" fill="white" font-family="system-ui" font-size="24" font-weight="600">Dodaj okładkę</text>
+  <text x="200" y="340" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-family="system-ui" font-size="14">/images/album-cover.jpg</text>
+</svg>

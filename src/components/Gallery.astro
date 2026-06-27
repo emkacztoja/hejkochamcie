@@ -1,0 +1,67 @@
+---
+import { siteConfig } from '../data/config';
+import SlideShell from './SlideShell.astro';
+
+const zdjecia = siteConfig.zdjecia;
+const maZdjecia = zdjecia.length > 0;
+// Funkcja pomocnicza do pobierania klasy na podstawie wariantu ze zdjęciem lub domyślnego schematu
+const getWariant = (z: any, index: number) => {
+  if (z.wariant === 'pionowe') return 'tall';
+  if (z.wariant === 'poziome') return 'wide';
+  if (z.wariant === 'normalne') return '';
+  
+  // Domyślny wzorzec jeśli brak zdefiniowanego wariantu w config.ts
+  const domyslne: Record<number, 'tall' | 'wide' | ''> = {
+    0: 'tall',
+    1: '',
+    2: 'wide',
+    3: '',
+    4: '',
+    5: 'tall',
+  };
+  return domyslne[index % 6] ?? '';
+};
+---
+
+<SlideShell id="slide-6" bg="cool" showScrollHint={true}>
+  <p class="slide-eyebrow">Slajd 6 z 9</p>
+  <h2 class="slide-title">
+    Złapane w <span class="gradient">kadrze</span> 📸
+  </h2>
+  <p class="slide-subtitle">{siteConfig.galeriaOpis}</p>
+
+  {maZdjecia ? (
+    <div class="gallery">
+      {zdjecia.map((z, i) => (
+        <figure class={`gallery-item ${getWariant(z, i)}`}>
+          <img
+            src={z.src}
+            alt={`Wspomnienie ${i + 1}`}
+            loading="lazy"
+            onerror="this.parentElement.classList.add('img-missing'); this.style.opacity='0'"
+          />
+        </figure>
+      ))}
+    </div>
+  ) : (
+    <div class="gallery-empty">
+      <p>Brak zdjęć w galerii wspomnień.</p>
+    </div>
+  )}
+</SlideShell>
+
+<style>
+  /* Placeholder dla brakujących zdjęć */
+  .gallery-item.img-missing {
+    background: linear-gradient(135deg, rgba(255, 77, 141, 0.2), rgba(124, 58, 237, 0.2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.85rem;
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+  }
+  .gallery-item.img-missing::after {
+    content: '📷 brak zdjęcia';
+  }
+</style>

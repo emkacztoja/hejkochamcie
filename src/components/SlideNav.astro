@@ -1,0 +1,52 @@
+---
+interface Props {
+  total: number;
+}
+
+const { total } = Astro.props;
+const ids = Array.from({ length: total }, (_, i) => `slide-${i}`);
+---
+
+<nav class="slide-nav" aria-label="Nawigacja slajdów">
+  {ids.map((id, idx) => (
+    <button
+      type="button"
+      data-target={id}
+      aria-label={`Przejdź do slajdu ${idx + 1}`}
+      class={idx === 0 ? 'active' : ''}
+    ></button>
+  ))}
+</nav>
+
+<script>
+  const nav = document.querySelector('.slide-nav');
+  const buttons = nav?.querySelectorAll('button') ?? [];
+  const slides = document.querySelectorAll('[data-slide]');
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const target = btn.getAttribute('data-target');
+      const el = target ? document.getElementById(target) : null;
+      el?.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // Podświetl aktywny slajd — zoptymalizowane dla długich sekcji na komórkach
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          buttons.forEach((b) => {
+            b.classList.toggle('active', b.getAttribute('data-target') === id);
+          });
+        }
+      });
+    },
+    { 
+      rootMargin: '-20% 0px -20% 0px', // Reaguje na środek ekranu
+      threshold: 0.1 // Dowolny slajd zajmujący min. 10% środkowej strefy zostanie oznaczony jako aktywny
+    }
+  );
+  slides.forEach((s) => observer.observe(s));
+</script>

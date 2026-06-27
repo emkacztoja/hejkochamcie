@@ -1,0 +1,22 @@
+---
+import { siteConfig } from '../data/config';
+import SlideShell from './SlideShell.astro';
+---
+
+<SlideShell id="slide-1" bg="pink" showScrollHint={true}>
+  <p class="slide-eyebrow">Slajd 1 z 9</p>
+  <h1 class="slide-title">{siteConfig.intro.naglowek}</h1>
+  <p class="slide-subtitle">{siteConfig.intro.podtytul}</p>
+  <button class="btn-primary" type="button" data-go-next>
+    {siteConfig.intro.przycisk}
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12h14M13 6l6 6-6 6"/>
+    </svg>
+  </button>
+</SlideShell>
+
+<script>
+  document.querySelector('[data-go-next]')?.addEventListener('click', () => {
+    document.getElementById('slide-2')?.scrollIntoView({ behavior: 'smooth' });
+  });
+</script>

@@ -1,0 +1,42 @@
+---
+interface Props {
+  id: string;
+  bg?: 'pink' | 'purple' | 'warm' | 'cool';
+  showScrollHint?: boolean;
+}
+
+const { id, bg = 'pink', showScrollHint = false } = Astro.props;
+---
+
+<section class="slide" id={id} data-slide>
+  <div class={`slide-bg ${bg}`}></div>
+  <div class="slide-inner fade-up">
+    <slot />
+  </div>
+  {showScrollHint && (
+    <div class="scroll-hint">
+      <span>przewiń niżej</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 9l6 6 6-6"/>
+      </svg>
+    </div>
+  )}
+</section>
+
+<script>
+  // IntersectionObserver do animacji fade-up
+  const slides = document.querySelectorAll('.slide');
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.querySelectorAll('.fade-up').forEach((el) => {
+            el.classList.add('is-visible');
+          });
+        }
+      });
+    },
+    { threshold: 0.35 }
+  );
+  slides.forEach((s) => io.observe(s));
+</script>

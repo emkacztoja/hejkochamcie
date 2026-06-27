@@ -1,0 +1,172 @@
+---
+import { siteConfig } from "../data/config";
+import SlideShell from "./SlideShell.astro";
+
+// Placeholder messages if none provided
+const defaultMessages = [
+  { tresc: "Hej 👋", kto: "ja", czas: "21:37" },
+  { tresc: "Cześć! 💕", kto: "ona", czas: "21:38" },
+  { tresc: "Jak tam?", kto: "ja", czas: "21:40" },
+  { tresc: "Dobrze, a ty? ☀️", kto: "ona", czas: "21:41" },
+  { tresc: "Też dobrze, w sumie to świetnie", kto: "ja", czas: "21:42" },
+  { tresc: "Cieszę się! 🌟", kto: "ona", czas: "21:42" },
+];
+
+const wiadomosci =
+  siteConfig.wiadomosci && siteConfig.wiadomosci.length > 0
+    ? siteConfig.wiadomosci
+    : defaultMessages;
+---
+
+<SlideShell id="slide-5" bg="warm" showScrollHint={true}>
+  <p class="slide-eyebrow">Slajd 5 z 9</p>
+  <h2 class="slide-title">
+    A potem było już tylko <span class="gradient">coraz lepiej</span> 💬
+  </h2>
+
+  <div class="chat-container">
+    <div class="chat-header">
+      <div class="chat-avatar">
+        <img
+          src={siteConfig.jejProfilowe || siteConfig.zdjecia?.[0]?.src || "/images/album-placeholder.svg"}
+          alt="Avatar"
+          onerror="this.onerror=null; this.src='/images/album-placeholder.svg';"
+        />
+      </div>
+      <div class="chat-info">
+        <span class="chat-name">siekierka🫶</span>
+        <span class="chat-status">aktywna teraz 💕</span>
+      </div>
+    </div>
+
+    <div class="chat-messages">
+      {
+        wiadomosci.map((msg, i) => (
+          <div
+            class={`chat-bubble ${msg.kto === "ja" ? "bubble-me" : "bubble-her"}`}
+          >
+            <span class="bubble-text">{msg.tresc}</span>
+            <span class="bubble-time">{msg.czas}</span>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+
+</SlideShell>
+
+<style>
+  .chat-container {
+    margin-top: 32px;
+    max-width: 480px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 24px;
+    overflow: hidden;
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-card);
+  }
+
+  .chat-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .chat-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--accent-pink);
+  }
+
+  .chat-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .chat-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chat-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .chat-status {
+    font-size: 0.75rem;
+    color: #4ade80;
+  }
+
+  .chat-messages {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+
+  .chat-messages::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .chat-messages::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .chat-messages::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+  }
+
+  .chat-bubble {
+    max-width: 75%;
+    padding: 10px 14px;
+    border-radius: 18px;
+    position: relative;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .bubble-me {
+    align-self: flex-end;
+    background: linear-gradient(
+      135deg,
+      var(--accent-pink),
+      var(--accent-purple)
+    );
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+
+  .bubble-her {
+    align-self: flex-start;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border-bottom-left-radius: 4px;
+  }
+
+  .bubble-time {
+    font-size: 0.65rem;
+    opacity: 0.6;
+    align-self: flex-end;
+  }
+
+  .bubble-me .bubble-time {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+
+</style>

@@ -1,0 +1,91 @@
+---
+import { siteConfig } from '../data/config';
+import SlideShell from './SlideShell.astro';
+
+const powody = siteConfig.powody;
+---
+
+<SlideShell id="slide-8" bg="pink" showScrollHint={true}>
+  <p class="slide-eyebrow">Slajd 8 z 9</p>
+  <h2 class="slide-title">
+    Dlaczego cię <span class="gradient">kocham</span> 💕
+  </h2>
+  <p class="slide-subtitle">Mógłbym wymieniać bez końca…</p>
+  
+  <div class="reasons-container">
+    {powody.map((powod, i) => (
+      <div class="reason-card" style={`--delay: ${i * 0.1}s`}>
+        <span class="reason-text">{powod}</span>
+        <span class="reason-heart">💗</span>
+      </div>
+    ))}
+  </div>
+</SlideShell>
+
+<style>
+  .reasons-container {
+    margin-top: 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .reason-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 28px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    backdrop-filter: blur(12px);
+    opacity: 0;
+    transform: translateX(-30px);
+    animation: slideIn 0.6s ease forwards;
+    animation-delay: var(--delay);
+  }
+  
+  @keyframes slideIn {
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  .reason-card:hover {
+    background: rgba(255, 77, 141, 0.15);
+    border-color: var(--accent-pink);
+    transform: scale(1.02);
+  }
+  
+  .reason-text {
+    font-family: var(--font-hand);
+    font-size: clamp(1.3rem, 3vw, 1.6rem);
+    color: white;
+    line-height: 1.3;
+  }
+  
+  .reason-heart {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+  }
+  
+  .reason-card:hover .reason-heart {
+    transform: scale(1.3) rotate(15deg);
+  }
+  
+  @media (max-width: 480px) {
+    .reason-card {
+      padding: 16px 20px;
+    }
+    
+    .reason-heart {
+      display: none;
+    }
+  }
+</style>

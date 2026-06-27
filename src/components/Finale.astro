@@ -1,0 +1,269 @@
+---
+import { siteConfig } from "../data/config";
+import SlideShell from "./SlideShell.astro";
+---
+
+<SlideShell id="slide-9" bg="pink" showScrollHint={false}>
+  <p class="slide-eyebrow">Slajd 9 z 9</p>
+  <h2 class="slide-title">
+    {siteConfig.final.naglowekPrzed}<br />
+    <span class="gradient">{siteConfig.final.naglowekPo}</span>
+  </h2>
+
+  <p class="slide-subtitle">{siteConfig.final.licznikEtykieta}</p>
+
+  <div class="live-counter" data-counter data-start={siteConfig.dataRazem}>
+    <div class="counter-unit">
+      <span class="counter-value" data-unit="days">0</span>
+      <span class="counter-label">dni</span>
+    </div>
+    <div class="counter-unit">
+      <span class="counter-value" data-unit="hours">0</span>
+      <span class="counter-label">godz.</span>
+    </div>
+    <div class="counter-unit">
+      <span class="counter-value" data-unit="minutes">0</span>
+      <span class="counter-label">min.</span>
+    </div>
+    <div class="counter-unit">
+      <span class="counter-value" data-unit="seconds">0</span>
+      <span class="counter-label">sek.</span>
+    </div>
+    <div class="counter-unit">
+      <span class="counter-value" data-unit="ms">0</span>
+      <span class="counter-label">ms</span>
+    </div>
+  </div>
+
+  <div class="next-milestone">
+    <p class="milestone-label">Do następnego miesiąca razem:</p>
+    <div
+      class="milestone-counter"
+      data-milestone
+      data-target={siteConfig.dataRazem}
+      data-months="2"
+    >
+      <div class="counter-unit">
+        <span class="counter-value" data-unit="m-days">0</span>
+        <span class="counter-label">dni</span>
+      </div>
+      <div class="counter-unit">
+        <span class="counter-value" data-unit="m-hours">0</span>
+        <span class="counter-label">godz.</span>
+      </div>
+      <div class="counter-unit">
+        <span class="counter-value" data-unit="m-minutes">0</span>
+        <span class="counter-label">min.</span>
+      </div>
+      <div class="counter-unit">
+        <span class="counter-value" data-unit="m-seconds">0</span>
+        <span class="counter-label">sek.</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="final-message">
+    {siteConfig.final.zyczenia}
+    <span class="signature">— {siteConfig.twojeImie}</span>
+  </p>
+</SlideShell>
+
+<script>
+  import confetti from "canvas-confetti";
+
+  const counter = document.querySelector<HTMLElement>("[data-counter]");
+  if (counter) {
+    const startStr =
+      counter.getAttribute("data-start") ?? new Date().toISOString();
+    const start = new Date(startStr).getTime();
+    if (isNaN(start)) {
+      console.warn("Niepoprawna dataRazem w config.ts — używam dzisiaj.");
+    }
+    const safeStart = isNaN(start) ? Date.now() : start;
+
+    const daysEl = counter.querySelector<HTMLElement>('[data-unit="days"]')!;
+    const hoursEl = counter.querySelector<HTMLElement>('[data-unit="hours"]')!;
+    const minsEl = counter.querySelector<HTMLElement>('[data-unit="minutes"]')!;
+    const secsEl = counter.querySelector<HTMLElement>('[data-unit="seconds"]')!;
+    const msEl = counter.querySelector<HTMLElement>('[data-unit="ms"]')!;
+
+    function tick() {
+      const now = Date.now();
+      const diff = Math.max(0, now - safeStart);
+      const days = Math.floor(diff / 86_400_000);
+      const hours = Math.floor((diff / 3_600_000) % 24);
+      const mins = Math.floor((diff / 60_000) % 60);
+      const secs = Math.floor((diff / 1000) % 60);
+      const ms = Math.floor(diff % 1000);
+
+      daysEl.textContent = days.toString().padStart(2, "0");
+      hoursEl.textContent = hours.toString().padStart(2, "0");
+      minsEl.textContent = mins.toString().padStart(2, "0");
+      secsEl.textContent = secs.toString().padStart(2, "0");
+      msEl.textContent = ms.toString().padStart(3, "0");
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // ── Konfetti na wejściu slajdu ────────────────────────────────────────
+  let confettiFired = false;
+  function fireConfetti() {
+    if (confettiFired) return;
+    confettiFired = true;
+
+    const colors = ["#ff4d8d", "#d946ef", "#7c3aed", "#ffd166", "#38bdf8"];
+
+    // Duży wystrzał
+    confetti({
+      particleCount: 160,
+      spread: 90,
+      startVelocity: 55,
+      origin: { x: 0.5, y: 0.45 },
+      colors,
+      scalar: 1.1,
+    });
+
+    // Boczne salwy z opóźnieniem
+    setTimeout(() => {
+      confetti({
+        particleCount: 80,
+        angle: 60,
+        spread: 80,
+        origin: { x: 0, y: 0.7 },
+        colors,
+      });
+      confetti({
+        particleCount: 80,
+        angle: 120,
+        spread: 80,
+        origin: { x: 1, y: 0.7 },
+        colors,
+      });
+    }, 350);
+
+    // Subtelny deszcz co kilka sekund
+    const interval = setInterval(() => {
+      confetti({
+        particleCount: 40,
+        spread: 70,
+        startVelocity: 25,
+        origin: { x: Math.random(), y: -0.1 },
+        colors,
+        scalar: 0.8,
+      });
+    }, 2500);
+
+    // Wyłącz deszcz po 12 sekundach
+    setTimeout(() => clearInterval(interval), 12000);
+  }
+
+  const finale = document.getElementById("slide-9");
+  if (finale) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.intersectionRatio > 0.4) {
+            fireConfetti();
+            io.disconnect();
+          }
+        });
+      },
+      { threshold: [0.4, 0.5, 0.6] },
+    );
+    io.observe(finale);
+  }
+
+  // ── Odliczanie do następnego milestone ──────────────────────────────
+  const milestone = document.querySelector<HTMLElement>("[data-milestone]");
+  if (milestone) {
+    const targetStr =
+      milestone.getAttribute("data-target") ?? new Date().toISOString();
+    const monthsAhead = parseInt(milestone.getAttribute("data-months") ?? "2");
+    const start = new Date(targetStr).getTime();
+
+    // Oblicz datę target (start + X miesięcy)
+    const targetDate = new Date(start);
+    targetDate.setMonth(targetDate.getMonth() + monthsAhead);
+
+    const mDaysEl = milestone.querySelector<HTMLElement>(
+      '[data-unit="m-days"]',
+    )!;
+    const mHoursEl = milestone.querySelector<HTMLElement>(
+      '[data-unit="m-hours"]',
+    )!;
+    const mMinsEl = milestone.querySelector<HTMLElement>(
+      '[data-unit="m-minutes"]',
+    )!;
+    const mSecsEl = milestone.querySelector<HTMLElement>(
+      '[data-unit="m-seconds"]',
+    )!;
+
+    function tickMilestone() {
+      const now = Date.now();
+      const diff = Math.max(0, targetDate.getTime() - now);
+
+      const days = Math.floor(diff / 86_400_000);
+      const hours = Math.floor((diff / 3_600_000) % 24);
+      const mins = Math.floor((diff / 60_000) % 60);
+      const secs = Math.floor((diff / 1000) % 60);
+
+      mDaysEl.textContent = days.toString().padStart(2, "0");
+      mHoursEl.textContent = hours.toString().padStart(2, "0");
+      mMinsEl.textContent = mins.toString().padStart(2, "0");
+      mSecsEl.textContent = secs.toString().padStart(2, "0");
+
+      requestAnimationFrame(tickMilestone);
+    }
+    requestAnimationFrame(tickMilestone);
+  }
+</script>
+
+<style>
+  /* Next Milestone Counter */
+  .next-milestone {
+    margin-top: 48px;
+    text-align: center;
+  }
+
+  .milestone-label {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin: 0 0 16px;
+    letter-spacing: 0.05em;
+  }
+
+  .milestone-counter {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .milestone-counter .counter-unit {
+    background: rgba(255, 77, 141, 0.15);
+    border: 1px solid rgba(255, 77, 141, 0.3);
+    padding: 16px 20px;
+  }
+
+  .milestone-counter .counter-value {
+    font-size: 2rem;
+  }
+
+  .milestone-counter .counter-label {
+    font-size: 0.65rem;
+  }
+
+  @media (max-width: 480px) {
+    .milestone-counter {
+      gap: 8px;
+    }
+
+    .milestone-counter .counter-unit {
+      padding: 12px 12px;
+    }
+
+    .milestone-counter .counter-value {
+      font-size: 1.5rem;
+    }
+  }
+</style>

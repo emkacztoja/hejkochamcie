@@ -1,0 +1,22 @@
+{
+  "name": "hej-lenka-kocham-cie",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Strona-niespodzianka na 1. miesiąc + 18. urodziny Lenki.",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^5.0.0",
+    "canvas-confetti": "^1.9.3"
+  },
+  "devDependencies": {
+    "@types/canvas-confetti": "^1.6.4",
+    "typescript": "^5.6.3"
+  }
+}
