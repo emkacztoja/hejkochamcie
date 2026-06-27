@@ -91,27 +91,29 @@ const { songs } = Astro.props;
       const activeSlide = getCurrentSlideIndex();
       const audios = document.querySelectorAll('#audio-controller audio') as NodeListOf<HTMLAudioElement>;
       
-      // Unlock all audios simultaneously by playing/pausing at volume 0
+      // Unlock all audios simultaneously
       audios.forEach((audioEl) => {
         if (!audioEl.src) return;
         
-        const originalVolume = audioEl.volume;
-        audioEl.volume = 0;
+        const isTarget = audioEl.id === `player-audio-${activeSlide}`;
         
-        audioEl.play().then(() => {
-          audioEl.pause();
-          audioEl.volume = originalVolume;
-          audioEl.currentTime = 0;
-          
-          // Play the current slide's audio for real
-          if (audioEl.id === `player-audio-${activeSlide}`) {
-            audioEl.play().catch((err) => {
-              console.warn("Active slide play failed after unlock:", err);
-            });
-          }
-        }).catch((err) => {
-          console.warn("Unlock failed for audio:", audioEl.id, err);
-        });
+        if (isTarget) {
+          // If this is the active slide, play it for real (not muted)
+          audioEl.muted = false;
+          audioEl.play().catch((err) => {
+            console.warn("Active slide play failed:", err);
+          });
+        } else {
+          // Otherwise, silently play and pause to unlock (using muted=true which is fully supported on iOS)
+          audioEl.muted = true;
+          audioEl.play().then(() => {
+            audioEl.pause();
+            audioEl.muted = false;
+            audioEl.currentTime = 0;
+          }).catch((err) => {
+            console.warn("Silent play failed for:", audioEl.id, err);
+          });
+        }
       });
       
       currentSlide = activeSlide;
