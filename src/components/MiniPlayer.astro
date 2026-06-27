@@ -8,24 +8,20 @@ interface Props {
 const { songs } = Astro.props;
 ---
 
-<div id="audio-controller" data-songs={JSON.stringify(songs)} style="display: none;">
-  <audio id="player-audio" preload="auto"></audio>
+<div id="audio-controller" style="display: none;">
+  {songs.map((song, index) => (
+    song.src ? (
+      <audio id={`player-audio-${index}`} src={song.src} preload="auto" loop></audio>
+    ) : null
+  ))}
 </div>
 
 <script>
-  interface Song {
-    tytul: string;
-    artysta: string;
-    src: string;
-    cover: string;
-  }
-  
   const container = document.getElementById('audio-controller') as HTMLElement;
-  const audio = document.getElementById('player-audio') as HTMLAudioElement;
   
-  if (container && audio) {
-    const songsData = JSON.parse(container.getAttribute('data-songs') || '[]') as Song[];
+  if (container) {
     let currentSlide = -1;
+    let currentAudio: HTMLAudioElement | null = null;
     let unlocked = false;
     
     // Get active slide index based on scroll position
@@ -33,7 +29,6 @@ const { songs } = Astro.props;
       const slides = document.querySelectorAll('[data-slide]');
       for (let i = 0; i < slides.length; i++) {
         const rect = slides[i].getBoundingClientRect();
-        // Check if the slide is occupying the viewport
         if (rect.top >= -window.innerHeight / 2 && rect.top < window.innerHeight / 2) {
           return i;
         }
@@ -41,29 +36,31 @@ const { songs } = Astro.props;
       return 0;
     }
     
-    // Load and play song for a specific slide
+    function getAudioElement(index: number): HTMLAudioElement | null {
+      return document.getElementById(`player-audio-${index}`) as HTMLAudioElement | null;
+    }
+    
+    // Play song for a specific slide
     function loadAndPlaySong(slideIndex: number) {
       if (slideIndex === currentSlide) return;
       
-      const song = songsData[slideIndex];
       currentSlide = slideIndex;
       
-      if (!song || !song.src) {
-        audio.pause();
-        audio.src = '';
-        audio.removeAttribute('data-current-src');
-        return;
+      // Pause previously active audio
+      if (currentAudio) {
+        currentAudio.pause();
       }
       
-      // Load the new song
-      audio.src = song.src;
-      audio.setAttribute('data-current-src', song.src);
-      audio.load();
+      const nextAudio = getAudioElement(slideIndex);
+      currentAudio = nextAudio;
+      
+      if (!nextAudio) return;
       
       // Try to play if audio is unlocked
       if (unlocked) {
-        audio.play().catch((err) => {
-          console.warn("Autoplay blocked or interrupted:", err);
+        nextAudio.currentTime = 0;
+        nextAudio.play().catch((err) => {
+          console.warn("Playback failed:", err);
         });
       }
     }
@@ -91,39 +88,40 @@ const { songs } = Astro.props;
       
       removeUnlockListeners();
       
-      // Play the song for the current slide
       const activeSlide = getCurrentSlideIndex();
-      const song = songsData[activeSlide];
+      const audios = document.querySelectorAll('#audio-controller audio') as NodeListOf<HTMLAudioElement>;
       
-      if (song && song.src) {
-        if (currentSlide === activeSlide) {
-          audio.play().catch((err) => {
-            console.warn("Play failed after interaction unlock:", err);
-          });
-        } else {
-          loadAndPlaySong(activeSlide);
-        }
-      } else {
-        // If the current slide has no song (like Slide 0 PreIntro),
-        // we play a brief silent audio to unlock the player.
-        // Once the player is unlocked, subsequent programmatic play() calls (e.g. on scroll) will succeed.
-        audio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
-        audio.play().then(() => {
-          audio.pause();
-          audio.src = '';
+      // Unlock all audios simultaneously by playing/pausing at volume 0
+      audios.forEach((audioEl) => {
+        if (!audioEl.src) return;
+        
+        const originalVolume = audioEl.volume;
+        audioEl.volume = 0;
+        
+        audioEl.play().then(() => {
+          audioEl.pause();
+          audioEl.volume = originalVolume;
+          audioEl.currentTime = 0;
+          
+          // Play the current slide's audio for real
+          if (audioEl.id === `player-audio-${activeSlide}`) {
+            audioEl.play().catch((err) => {
+              console.warn("Active slide play failed after unlock:", err);
+            });
+          }
         }).catch((err) => {
-          console.warn("Silent audio unlock failed:", err);
-          // If silent play failed, mark as locked so we can try again on the next interaction
-          unlocked = false;
-          addUnlockListeners();
+          console.warn("Unlock failed for audio:", audioEl.id, err);
         });
-      }
+      });
+      
+      currentSlide = activeSlide;
+      currentAudio = getAudioElement(activeSlide);
     }
     
     // Listeners to unlock audio on first interaction
     addUnlockListeners();
     
-    // Scroll detection for slide change (using capture to catch scroll events from the .slides container)
+    // Scroll detection for slide change
     let scrollTimeout: number;
     window.addEventListener('scroll', () => {
       clearTimeout(scrollTimeout);
@@ -137,7 +135,7 @@ const { songs } = Astro.props;
     document.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
       
-      // 1. "Otwórz niespodziankę" button (Slide 0 -> Slide 1)
+      // 1. "Otwórz" button (Slide 0 -> Slide 1)
       if (target.closest('[data-open-intro]')) {
         unlocked = true;
         loadAndPlaySong(1);
@@ -164,15 +162,5 @@ const { songs } = Astro.props;
         }
       }
     });
-    
-    // When a song ends, loop it by default
-    audio.addEventListener('ended', () => {
-      audio.currentTime = 0;
-      audio.play().catch(() => {});
-    });
-    
-    // Initial setup: load the song for the starting slide
-    const initialSlide = getCurrentSlideIndex();
-    loadAndPlaySong(initialSlide);
   }
 </script>
