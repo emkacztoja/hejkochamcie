@@ -6,14 +6,6 @@ interface Props {
 }
 
 const { songs } = Astro.props;
-
-// Collect all images to preload
-const imagesToPreload = [
-  siteConfig.jejProfilowe,
-  siteConfig.screenshotIG,
-  siteConfig.sekretneZdjecie?.src,
-  ...(siteConfig.zdjecia?.map(z => z.src) || [])
-].filter(Boolean);
 ---
 
 <!-- Premium Fullscreen Preloader -->
@@ -28,7 +20,7 @@ const imagesToPreload = [
   </div>
 </div>
 
-<div id="audio-controller" data-images={JSON.stringify(imagesToPreload)} style="display: none;">
+<div id="audio-controller" style="display: none;">
   {songs.map((song, index) => (
     song.src ? (
       <audio id={`player-audio-${index}`} src={song.src} preload="auto" loop></audio>
@@ -91,7 +83,7 @@ const imagesToPreload = [
     height: 100%;
     background: linear-gradient(90deg, #ff4d8d, #7c3aed);
     border-radius: 3px;
-    transition: width 0.2s ease-out;
+    transition: width 0.1s ease-out;
   }
   
   .preloader-percentage {
@@ -214,73 +206,55 @@ const imagesToPreload = [
       currentAudio = getAudioElement(activeSlide);
     }
     
-    // ── Asset Preloader Logic ───────────────────────────────────────────
-    const imagesData = JSON.parse(container.getAttribute('data-images') || '[]') as string[];
-    const audioElements = document.querySelectorAll('#audio-controller audio') as NodeListOf<HTMLAudioElement>;
-    
-    const assetsToLoad: { url: string }[] = [];
-    
-    audioElements.forEach((el) => {
-      const url = el.getAttribute('src');
-      if (url) {
-        assetsToLoad.push({ url });
-      }
-    });
-    
-    imagesData.forEach((url) => {
-      assetsToLoad.push({ url });
-    });
-    
-    const totalAssets = assetsToLoad.length;
-    let loadedAssets = 0;
-    
+    // ── Smooth Timer-based Loading Animation ─────────────────────────────
+    const preloaderEl = document.getElementById('preloader') as HTMLElement;
     const progressBar = document.getElementById('preloader-progress-bar') as HTMLElement;
     const percentageText = document.getElementById('preloader-percentage') as HTMLElement;
     const statusText = document.querySelector('.preloader-text') as HTMLElement;
-    const preloaderEl = document.getElementById('preloader') as HTMLElement;
     
-    function updateProgress() {
-      loadedAssets++;
-      const progress = Math.min((loadedAssets / totalAssets) * 100, 100);
+    // Call .load() on all audios to trigger native browser preloading
+    const audioElements = document.querySelectorAll('#audio-controller audio') as NodeListOf<HTMLAudioElement>;
+    audioElements.forEach((el) => {
+      el.load();
+    });
+
+    const duration = 2200; // 2.2 seconds loading animation
+    const startTime = performance.now();
+
+    function animatePreloader(now: number) {
+      const elapsed = now - startTime;
+      const progress = Math.min((elapsed / duration) * 100, 100);
+      
       if (progressBar) progressBar.style.width = `${progress}%`;
       if (percentageText) percentageText.textContent = `${Math.round(progress)}%`;
       
-      if (loadedAssets >= totalAssets) {
-        // Complete
+      if (statusText) {
+        if (progress < 30) {
+          statusText.textContent = 'Przygotowuję wspomnienia...';
+        } else if (progress < 60) {
+          statusText.textContent = 'Wczytuję ścieżkę dźwiękową...';
+        } else if (progress < 90) {
+          statusText.textContent = 'Dekoruję slajdy...';
+        } else {
+          statusText.textContent = 'Gotowe!';
+        }
+      }
+
+      if (progress < 100) {
+        requestAnimationFrame(animatePreloader);
+      } else {
         setTimeout(() => {
-          if (statusText) statusText.textContent = 'Gotowe!';
-          setTimeout(() => {
-            if (preloaderEl) {
-              preloaderEl.classList.add('fade-out');
-              setTimeout(() => {
-                preloaderEl.remove();
-              }, 800);
-            }
-          }, 300);
+          if (preloaderEl) {
+            preloaderEl.classList.add('fade-out');
+            setTimeout(() => {
+              preloaderEl.remove();
+            }, 800);
+          }
         }, 200);
       }
     }
     
-    if (totalAssets === 0) {
-      if (preloaderEl) {
-        preloaderEl.classList.add('fade-out');
-        setTimeout(() => preloaderEl.remove(), 800);
-      }
-    } else {
-      // Start parallel loading of all assets directly into HTTP cache
-      assetsToLoad.forEach(async (asset) => {
-        try {
-          const response = await fetch(asset.url);
-          if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-          // Load as blob to fully pull into cache
-          await response.blob();
-        } catch (err) {
-          console.warn(`Failed to preload: ${asset.url}`, err);
-        } finally {
-          updateProgress();
-        }
-      });
-    }
+    requestAnimationFrame(animatePreloader);
     
     // Listeners to unlock audio on first interaction
     addUnlockListeners();
