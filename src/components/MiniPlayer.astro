@@ -165,7 +165,7 @@ const { songs } = Astro.props;
     }
 
     // Unlock audio context on first user interaction
-    function unlockAndPlay() {
+    function unlockAndPlay(e?: Event) {
       // Prevent unlocking while preloader is active to avoid race conditions
       if (document.getElementById('preloader')) return;
       
@@ -174,7 +174,29 @@ const { songs } = Astro.props;
       
       removeUnlockListeners();
       
-      const activeSlide = getCurrentSlideIndex();
+      let activeSlide = getCurrentSlideIndex();
+      
+      // If the interaction was a click on a navigation button, determine the target slide
+      if (e && e.target) {
+        const target = e.target as HTMLElement;
+        if (target.closest('[data-open-intro]')) {
+          activeSlide = 1;
+        } else if (target.closest('[data-go-next]')) {
+          activeSlide = 2;
+        } else {
+          const navButton = target.closest('[data-target]');
+          if (navButton) {
+            const targetId = navButton.getAttribute('data-target');
+            if (targetId && targetId.startsWith('slide-')) {
+              const slideIndex = parseInt(targetId.replace('slide-', ''), 10);
+              if (!isNaN(slideIndex)) {
+                activeSlide = slideIndex;
+              }
+            }
+          }
+        }
+      }
+      
       const audios = document.querySelectorAll('#audio-controller audio') as NodeListOf<HTMLAudioElement>;
       
       // Unlock all audios simultaneously using muted=true
