@@ -75,21 +75,26 @@ const kupony = siteConfig.kupony;
     backdrop-filter: blur(12px);
   }
   
-  .coupon-card:hover .coupon-front {
-    transform: rotateY(180deg);
+  /* Hover-flip tylko na urządzeniach z prawdziwym hoverem (mysz/trackpad).
+     Na iOS/Android sticky-hover podczas scrolla odpalał flip przypadkowo
+     — powodując znikanie kuponów przy dotyku podczas przewijania. */
+  @media (hover: hover) {
+    .coupon-card:hover .coupon-front {
+      transform: rotateY(180deg);
+    }
+
+    .coupon-card.redeemed:hover .coupon-front {
+      transform: rotateY(0deg);
+    }
   }
-  
+
   .coupon-card.redeemed .coupon-front {
     transform: rotateY(180deg);
   }
-  
+
   .coupon-back {
     background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
     transform: rotateY(180deg);
-  }
-  
-  .coupon-card.redeemed:hover .coupon-front {
-    transform: rotateY(0deg);
   }
   
   .coupon-card.redeemed .coupon-back {
