@@ -113,6 +113,8 @@ const wiadomosci =
     gap: 8px;
     max-height: 320px;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
 
   .chat-messages::-webkit-scrollbar {
@@ -170,3 +172,17 @@ const wiadomosci =
 
 
 </style>
+
+<script>
+  const chatMessages = document.querySelector('.chat-messages');
+  if (chatMessages) {
+    const preventBubbling = (e: Event) => {
+      e.stopPropagation();
+    };
+
+    chatMessages.addEventListener('touchstart', preventBubbling, { passive: true });
+    chatMessages.addEventListener('touchmove', preventBubbling, { passive: true });
+    chatMessages.addEventListener('touchend', preventBubbling, { passive: true });
+    chatMessages.addEventListener('wheel', preventBubbling, { passive: true });
+  }
+</script>

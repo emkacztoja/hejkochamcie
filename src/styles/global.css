@@ -106,7 +106,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(40px, 8vh, 80px) clamp(24px, 5vw, 80px);
+  padding: clamp(40px, 6vh, 60px) clamp(24px, 5vw, 80px) clamp(100px, 12vh, 140px);
 }
 
 /* Mobile: dopasowanie wysokości slajdów i zachowanie snap-scrolla */
@@ -118,7 +118,7 @@ a {
     min-height: 100vh; /* Dopasowanie do wysokości ekranu */
     scroll-snap-align: start; /* Zatrzymywanie na początku każdego slajdu */
     scroll-snap-stop: always;
-    padding-bottom: clamp(80px, 15vh, 120px);
+    padding: clamp(40px, 6vh, 60px) clamp(16px, 4vw, 32px) clamp(130px, 22vh, 180px);
   }
 }
 
